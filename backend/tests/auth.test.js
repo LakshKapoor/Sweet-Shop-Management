@@ -44,3 +44,4 @@ it("should succeed when credentials are valid",async ()=>{
     expect(res.body.message).toBe("Login successful (mock)");
 });
 });
+

@@ -39,7 +39,7 @@ Used an AI assistant to:
 - Clone repo  
 - Navigate to backend:
     - ```bash
-    cd backend
+    - cd backend
 - npm install
 
 ## Testing

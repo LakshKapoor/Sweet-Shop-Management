@@ -39,24 +39,3 @@ app.post("/api/auth/login", (req, res)=>{
 
 });
 
-app.get("/api/sweets", (req, res) => {
-    const sweets = [
-      {
-        id: 1,
-        name: "Ladoo",
-        category: "Indian",
-        price: 10,
-        quantity: 50
-      },
-      {
-        id: 2,
-        name: "Gulab Jamun",
-        category: "Indian",
-        price: 15,
-        quantity: 30
-      }
-    ];
-  
-    return res.status(200).json(sweets);
-  })
-  

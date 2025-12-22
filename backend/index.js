@@ -1,4 +1,5 @@
 const express = require("express");
+const connectDB = require("./config/db")
 
 const app = express();
 app.use(express.json());
@@ -55,3 +56,22 @@ app.post("/api/expenses",(req, res)=>{
         }
     });
 });
+
+app.get("/api/expenses",(req, res)=>{
+    const expenses = [
+        {
+            title: "lunch",
+            amount: 200,
+            category: "food"
+        },
+        {
+            title: "Bus",
+            amount: 50,
+            category: "Travel"
+          }
+        ];
+    
+        return res.status(200).json(expenses);
+});
+
+connectDB();

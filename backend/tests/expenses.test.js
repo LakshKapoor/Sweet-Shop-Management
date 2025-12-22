@@ -21,6 +21,15 @@ describe("Expense API", ()=>{
         expect(res.status).toBe(201);
         expect(res.body.message).toBe("Expense added (mock)")
     });
+
+    it("should return the expenses list", async ()=>{
+        const res = await request(app).get("/api/expenses");
+
+        expect(res.status).toBe(200);
+        expect(Array.isArray(res.body)).toBe(true);
+    });
 });
+
+
 
 

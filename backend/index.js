@@ -204,7 +204,44 @@ app.post("/api/expenses/:expenseId/confirm", async (req,res)=>{
     }
 })
 
+app.post("/api/expenses/:expensesId/pay",async (req,res)=>{
+    const {expenseId}= req.params
+    const {userId}= req.body
 
+    try {
+        const expense = await Expense.findById.(expenseId)
+
+        if(!expense){
+            return res.status(404).json({message:"Expense not found"})
+        }
+
+        const split = expense.splits.find(
+            (s)=> s.userId.toString() == userId
+        )
+
+        if(!split){
+            return res.status(404).json({message:"Split not found"}) 
+        }
+
+        if(split.status !== "UNPAID"){
+            return  res.status(400).json({message:"Payment already marked or confirmed"})
+        }
+
+        split.status = "PAID"
+
+        await expense.save()
+
+        return  res.status(404).json({
+            message:"Payment marked as paid",
+            expense
+        })
+
+
+    } catch (error) {
+        console.error(error)
+        return res.status(500).json({message:"Expense not found"})
+    }
+})
 
 
 

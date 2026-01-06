@@ -53,13 +53,14 @@ app.post("/api/auth/login", (req, res)=>{
 });
 
 app.post("/api/expenses",async (req, res)=>{
-    const {description, amount, groupId,paidBy, splitBetween} = req.body;
+    const {title, amount, groupId,paidBy, splitBetween} = req.body;
 
-    if(!description ||
+    if(!title ||
         !amount ||
         !groupId ||
         !paidBy ||
-        splitBetween===0){
+        !Array.isArray(splitBetween) ||
+        splitBetween.length===0){
         return res.status(400).json({message: "Invalid expense data"})
     }
 
@@ -73,7 +74,7 @@ app.post("/api/expenses",async (req, res)=>{
 
     try {
         const expense = await Expense.create({
-            description, 
+            title, 
             amount, 
             groupId,
             paidBy, 
@@ -85,9 +86,9 @@ app.post("/api/expenses",async (req, res)=>{
         });
 
     } catch (error) {
-        console.error(error)
+        console.error("Mongoose Error:", error.message)
         return res.status(500).json({
-            message: "Failed to add expense"
+            message: error.message
         })
     }
 
@@ -171,6 +172,18 @@ app.post("/api/groups", async (req, res) =>{
         return res.status(500).json({message:"Failed to create group"})
     }
 
+})
+
+app.get("/api/groups", async (req, res) =>{
+    const {groupId} = req.query;
+
+    try {
+        const filter = groupId ? {groupId} : {};
+        const groups = await Group.find()
+        return res.status(200).json(groups)
+    } catch (error) {
+        return res.status(500).json({message:"Failed to fetch groups"})
+    }
 })
 
 app.get("/api/groups/:groupId/balances" , async (req, res) =>{

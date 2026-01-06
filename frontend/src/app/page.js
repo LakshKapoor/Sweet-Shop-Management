@@ -4,19 +4,25 @@ import { useEffect, useState } from "react";
 
 
 /* API URL CONSTANT (HERE) */
-const APIurl = "http://172.25.8.58:3000";
+const APIurl = "http://172.25.8.31:3000";
 
 export default function Page() {
   const [expenses, setExpenses] = useState([]);
-
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
-  const [category, setCategory] = useState("");
   const [editingID, setEditingID] = useState("");
+  const [groups, setGroups] = useState([]);
+  const [selectedGroup, setSelectedGroup] = useState(null);
+
 
   //fetch expenses
-  const fetchExpenses=() => {
-    fetch(`${APIurl}/api/expenses`)
+  const fetchExpenses=(groupId) => {
+
+    const url = groupId
+    ? `${APIurl}/api/expenses?groupId=${groupId}` 
+    : `${APIurl}/api/expenses`;
+    
+    fetch(url)
       .then((res) => res.json())
       .then((data) => setExpenses(data))
       .catch((err) => console.error(err));
@@ -25,8 +31,10 @@ export default function Page() {
  
   //runs once page reloads
   useEffect(()=>{
-    fetchExpenses();
-  },[]);
+    if(selectedGroup){
+      fetchExpenses(selectedGroup)
+    }
+  },[selectedGroup]);
 
 //handle form submit
 const handleSubmit = (e) =>{
@@ -45,13 +53,13 @@ const handleSubmit = (e) =>{
     body: JSON.stringify({
       title,
       amount: Number(amount),
-      category,
+      
     }),
   })
   .then(()=>{
     setTitle("")
     setAmount("")
-    setCategory("")
+    
     setEditingID(null)
     fetchExpenses()
   })
@@ -72,7 +80,7 @@ const handleDelete = (id) =>{
 const handleEdit = (expense) =>{
   setTitle(expense.title)
   setAmount(expense.amount)
-  setCategory(expense.category)
+  
   setEditingID(expense._id)
 }
 
@@ -105,6 +113,22 @@ const handleEdit = (expense) =>{
   });
   fetchExpenses()
  }
+
+
+ //fetch groups
+ const fetchGroups = () => {
+  fetch(`${APIurl}/api/groups`)
+  .then((res) => res.json())
+  .then((data) => setGroups(data))
+  .catch((err) => console.error(err));
+ }
+
+ useEffect(()=>{
+  fetchGroups();
+ },[]);
+
+
+
   return (
     <main style={{ padding: "20px" }}>
       <h1>Expense Tracker</h1>
@@ -127,13 +151,8 @@ const handleEdit = (expense) =>{
 
         <br />
 
-        <input
-          placeholder="Category"
-          value ={category}
-          onChange = {(e)=>setCategory(e.target.value)}
-          />
-
-          <br />
+      
+          
 
           <button type="submit">
             {editingID ? "Update Expense":"Add Expense"}
@@ -145,6 +164,30 @@ const handleEdit = (expense) =>{
       </form>
 
       <hr />
+
+
+    <h2>Groups</h2>
+    {groups.length === 0 && <p>No groups found</p>}
+    <ul>
+    {groups.map((group)=>(
+      <li key={group._id}>
+        <button onClick={()=>{setSelectedGroup(group._id),
+          fetchExpenses(group._id)
+        } }
+        style={{margin: "10px"}}>
+        {group.name}
+        </button>
+      </li>
+    ))}
+    </ul>
+    {selectedGroup && (
+      <p style={{color: "green"}}>
+        Showing expenses for group: {selectedGroup.name}
+      </p>
+    )}
+
+
+    <h2>Expenses</h2>
 
       {expenses.length === 0 && <p>No expenses found</p>}
 
@@ -159,12 +202,7 @@ const handleEdit = (expense) =>{
                     
                   </span>
 
-                  <p>
-                    DEBUG: currentUserId = {currentUserId}
-                  </p>
-                  <p>
-                    DEBUG: expense.paidBy = {expense.paidBy}
-                  </p>
+                 
 
                   {/*PAY button*/}
                   {split.userId===currentUserId && split.status === "UNPAID" && (
@@ -185,9 +223,10 @@ const handleEdit = (expense) =>{
           ))}
 
       <ul>
+
         {expenses.map((expense) => (
           <li key={expense._id}>
-            {expense.title} — ₹{expense.amount} — {expense.category}
+            {expense.title} — ₹{expense.amount} 
 
             
             <button

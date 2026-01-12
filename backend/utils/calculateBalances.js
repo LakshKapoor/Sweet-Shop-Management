@@ -15,10 +15,17 @@ const calculateBalances = (expenses) =>{
         if(status === "CONFIRMED") continue;
         if(userId === paidBy) continue
 
+        
+
         if(!balances[userId]){
             balances[userId]=0;
         }
-
+        
+        if(!balances[paidBy]){
+            balances[paidBy]=0;
+        }
+        
+        
         balances[userId]-=share
 
         balances[paidBy]+=share

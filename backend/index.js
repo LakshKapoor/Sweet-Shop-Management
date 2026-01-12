@@ -294,8 +294,34 @@ app.post("/api/expenses/:expenseId/pay",async (req,res)=>{
         })
 
 
-    } catch (error) {B
+    } catch (error) {
         console.error(error)
         return res.status(500).json({message:"Expense not found"})
     }
+})
+
+app.post("/api/groups/:groupId/settle", async (req, res)=>{
+
+    console.log("Settle Api hit", req.params.groupId)
+    const { groupId }= req.params
+
+    try{
+        const expenses = await Expense.find({ groupId})
+
+        for(const expense of expenses){
+            for(const split of expense.splits){
+                split.status = "CONFIRMED"
+            }
+            await expense.save()
+        }
+
+        return  res.status(200).json({
+            message:"Group Settled Successfully"
+        })
+
+    }
+    catch (error) {
+    console.error(error)
+    return res.status(500).json({message:"Failed to settle group"})
+}
 })

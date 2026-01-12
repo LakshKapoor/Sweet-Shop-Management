@@ -17,6 +17,7 @@ export default function Page() {
   const [groups, setGroups] = useState([]);
   const [selectedGroupId, setSelectedGroupId] = useState(null);
   const [balances, setbalances] = useState(null);
+
   
 
 
@@ -79,7 +80,7 @@ const handleSubmit = (e) =>{
     setTitle("")
     setAmount("")
     
-    setEditingID(null)
+    
     fetchExpenses()
   })
   .catch((err)=>console.log(err))
@@ -143,7 +144,7 @@ const handleDelete = (id) =>{
 
   return (
     <main style={{ padding: "20px" }}>
-      <h1>Expense Tracker</h1>
+      <h1 className="text-3xl font-bold text-green-500 py-5">Expense Tracker</h1>
 
       <div style = {{marginBottom: "20px"}}>
       <label>
@@ -201,8 +202,18 @@ const handleDelete = (id) =>{
     <ul>
     {groups.map((group)=>(
       <li key={group._id}>
-        <button onClick={()=>{setSelectedGroupId(group._id),
-          fetchExpenses(group._id)
+        <button onClick={()=>{
+          if(selectedGroupId === group._id){
+            console.log("closing group")
+            setSelectedGroupId(null);
+            setExpenses([]),
+            setbalances(null)
+          }
+          else{ 
+            console.log("opening group")
+            setSelectedGroupId(group._id)
+          }
+         
         } }
         style={{margin: "10px"}}>
         {group.name}
@@ -252,13 +263,20 @@ const handleDelete = (id) =>{
             </div>
           ))}
 
+        {selectedGroupId && (
+          <>
           <h2>Balances</h2>
+          
           {!balances &&<p>No balances to show</p>}
           {
-            balances && (
+             balances && (
               <ul>
                 {Object.entries(balances).map(([userId,amount])=>
-                <li key = {userId}>
+                <li key = {userId}
+                style={{
+                  color: amount>0 ? "green": amount<0 ?"red": "gray",
+                  fontWeight: "bold"
+                }}>
                   {userId}{" "}
                   {amount>0 
                   ?`will recieve ${amount}`
@@ -272,7 +290,26 @@ const handleDelete = (id) =>{
               </ul>
             )
           }
+          </>
+        )}
 
+        {selectedGroupId && balances &&(
+          <button
+            className="mt-5 px-4 bg-black text-white"
+            onClick={async ()=> {
+
+              console.log("Settle Clicked", selectedGroupId)
+              const res = await fetch(`${APIurl}/api/groups/${selectedGroupId}/settle`,{
+                method:"POST"
+              })
+
+              console.log("Settle Res status ", res.status)
+              fetchExpenses(selectedGroupId)
+              fetchbalances(selectedGroupId)
+            }}>
+              Settle Up Balances
+          </button>
+        )}
       {/* <ul>
 
         {expenses.map((expense) => (

@@ -18,7 +18,7 @@ const calculateBalances = (expenses) =>{
         
 
         if(!balances[userId]){
-            balances[userId]=0;
+            balances[userId]=0
         }
         
         if(!balances[paidBy]){

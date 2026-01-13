@@ -53,7 +53,7 @@ app.post("/api/auth/login", (req, res)=>{
 });
 
 app.post("/api/expenses",async (req, res)=>{
-    const {title, amount, groupId,paidBy} = req.body;
+    const {title, amount, groupId, paidBy, splits: customSplits} = req.body;
 
     if(!title ||
         !amount ||
@@ -62,32 +62,68 @@ app.post("/api/expenses",async (req, res)=>{
         return res.status(400).json({message: "Invalid expense data"})
     }
 
-    
-  
-
     try {
 
         const group = await Group.findById(groupId)
+        if(!group){
+            return res.status(404).json({message:"Group not found"})
+        }
+
         if(!group.members.includes(paidBy)){
             return res.status(400).json({
                 message: "PaidBy user must be a group member"
             })
-        }
-        if(!group){
-            return res.status(404).json({message:"Group not found"})
         }
 
         if(group.status === "SETTLED"){
             return res.status(400).json({message:"Group is already settled. cannot add new expense"})
         }
     
-        const shareAmount = amount/group.members.length;
+        let splits;
 
-        const splits = group.members.map((userId)=>({
-            userId,
-            share: shareAmount,
-            status: userId == paidBy ? "CONFIRMED" : "UNPAID",
-        }))
+        // If custom splits are provided, use them
+        if(customSplits && Array.isArray(customSplits) && customSplits.length > 0){
+            // Validate custom splits
+            const splitSum = customSplits.reduce((sum, split) => sum + (Number(split.share) || 0), 0);
+            
+            if(Math.abs(splitSum - amount) > 0.01){ // Allow small floating point differences
+                return res.status(400).json({
+                    message: `Split amounts (${splitSum}) must equal total amount (${amount})`
+                })
+            }
+
+            // Validate all split users are group members
+            for(const split of customSplits){
+                if(!group.members.includes(split.userId)){
+                    return res.status(400).json({
+                        message: `User ${split.userId} is not a group member`
+                    })
+                }
+            }
+
+            // Validate paidBy is in splits
+            const paidByInSplits = customSplits.some(split => split.userId === paidBy);
+            if(!paidByInSplits){
+                return res.status(400).json({
+                    message: "PaidBy user must be included in splits"
+                })
+            }
+
+            // Create splits with status
+            splits = customSplits.map((split)=>({
+                userId: split.userId,
+                share: Number(split.share),
+                status: split.userId == paidBy ? "CONFIRMED" : "UNPAID",
+            }))
+        } else {
+            // Default: equal split among all group members
+            const shareAmount = amount/group.members.length;
+            splits = group.members.map((userId)=>({
+                userId,
+                share: shareAmount,
+                status: userId == paidBy ? "CONFIRMED" : "UNPAID",
+            }))
+        }
         
         const expense = await Expense.create({
             title, 

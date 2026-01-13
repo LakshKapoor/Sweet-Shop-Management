@@ -18,6 +18,9 @@ export default function Page() {
   const [selectedGroupId, setSelectedGroupId] = useState(null);
   const [balances, setBalances] = useState(null);
 
+  const selectedGroup = groups.find(
+    (group) => group._id === selectedGroupId
+  )
   
 
 
@@ -184,12 +187,17 @@ const handleDelete = (id) =>{
 
         <br />
 
-          <button type="submit" disabled={!selectedGroupId}>
+          <button type="submit" 
+          disabled={!selectedGroupId || selectedGroup?.status === "SETTLED"}>
             {"Add Expense"}
             </button>
 
             {!selectedGroupId && (
               <p style={{color: "red"}}>Please select a group first</p>
+            )}
+
+            {selectedGroup?.status === "SETTLED" && (
+              <p style={{color: "red"}}>The group is settled. no new expenses allowed</p>
             )}
             
             {/*show buttons conditionally of confirmation*/}

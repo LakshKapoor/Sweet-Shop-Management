@@ -62,6 +62,7 @@ app.post("/api/expenses",async (req, res)=>{
         return res.status(400).json({message: "Invalid expense data"})
     }
 
+    
   
 
     try {
@@ -76,6 +77,10 @@ app.post("/api/expenses",async (req, res)=>{
             return res.status(404).json({message:"Group not found"})
         }
 
+        if(group.status === "SETTLED"){
+            return res.status(400).json({message:"Group is already settled. cannot add new expense"})
+        }
+    
         const shareAmount = amount/group.members.length;
 
         const splits = group.members.map((userId)=>({
@@ -307,14 +312,26 @@ app.post("/api/groups/:groupId/settle", async (req, res)=>{
     const { groupId }= req.params
 
     try{
+        const group = await Group.findById(groupId)
+
+        if(!group){
+            return res.status(404).json({message:"Group not found"})
+        }
+        if(group === "SETTLED"){
+            return res.status(404).json({message:"Group already settled"})
+        }
         const expenses = await Expense.find({ groupId})
 
         for(const expense of expenses){
             for(const split of expense.splits){
                 split.status = "CONFIRMED"
+
             }
             await expense.save()
         }
+        
+        group.status = "SETTLED"
+        await group.save()
 
         return  res.status(200).json({
             message:"Group Settled Successfully"

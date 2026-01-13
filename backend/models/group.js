@@ -11,6 +11,10 @@ const groupSchema = new mongoose.Schema({
         type: [String],
         required: true
     },
+    status:{
+        type: String,
+        enum:["OPEN", "SETTLED"]
+    },
     createdAt:{
         type: Date,
         default: Date.now

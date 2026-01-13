@@ -17,6 +17,9 @@ export default function Page() {
   const [groups, setGroups] = useState([]);
   const [selectedGroupId, setSelectedGroupId] = useState(null);
   const [balances, setBalances] = useState(null);
+  const [groupName, setGroupName] = useState("");
+  const [selectedMembers, setSelectedMembers] = useState([]);
+  const [isCreatingGroup, setIsCreatingGroup] = useState(false);
 
   const selectedGroup = groups.find(
     (group) => group._id === selectedGroupId
@@ -146,6 +149,72 @@ const handleDelete = (id) =>{
   fetchGroups();
  },[]);
 
+ //handle group creation
+ const handleCreateGroup = async (e) => {
+  e.preventDefault();
+  
+  // Validation
+  if (!groupName.trim()) {
+    alert("Please enter a group name");
+    return;
+  }
+  
+  if (selectedMembers.length === 0) {
+    alert("Please select at least one member");
+    return;
+  }
+
+  setIsCreatingGroup(true);
+
+  try {
+    const response = await fetch(`${APIurl}/api/groups`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: groupName.trim(),
+        members: selectedMembers,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Failed to create group");
+    }
+
+    // Clear form
+    setGroupName("");
+    setSelectedMembers([]);
+    
+    // Refresh groups list
+    fetchGroups();
+  } catch (err) {
+    console.error(err);
+    alert(err.message || "Failed to create group. Please try again.");
+  } finally {
+    setIsCreatingGroup(false);
+  }
+ };
+
+ //handle member selection (checkboxes)
+ const handleMemberToggle = (userId) => {
+  setSelectedMembers((prev) => {
+    if (prev.includes(userId)) {
+      return prev.filter((id) => id !== userId);
+    } else {
+      return [...prev, userId];
+    }
+  });
+ };
+
+ //handle member selection (multi-select)
+ const handleMultiSelectChange = (e) => {
+  const selectedOptions = Array.from(e.target.selectedOptions, (option) => option.value);
+  setSelectedMembers(selectedOptions);
+ };
+
 
 
   return (
@@ -207,6 +276,93 @@ const handleDelete = (id) =>{
 
       <hr />
 
+      <h2>Create Group</h2>
+      <form onSubmit={handleCreateGroup} style={{ marginBottom: "20px", padding: "15px", border: "1px solid #ccc", borderRadius: "5px" }}>
+        <div style={{ marginBottom: "15px" }}>
+          <label>
+            Group Name:{" "}
+            <input
+              type="text"
+              placeholder="Enter group name"
+              value={groupName}
+              onChange={(e) => setGroupName(e.target.value)}
+              style={{ padding: "5px", marginLeft: "5px" }}
+            />
+          </label>
+        </div>
+
+        <div style={{ marginBottom: "15px" }}>
+          <label style={{ display: "block", marginBottom: "10px" }}>Select Members:</label>
+          
+          {/* Checkboxes */}
+          <div style={{ marginBottom: "10px" }}>
+            <strong>Checkboxes:</strong>
+            {users.map((user) => (
+              <label key={user} style={{ display: "block", marginLeft: "20px", marginTop: "5px" }}>
+                <input
+                  type="checkbox"
+                  checked={selectedMembers.includes(user)}
+                  onChange={() => handleMemberToggle(user)}
+                />
+                {" "}{user}
+              </label>
+            ))}
+          </div>
+
+          {/* Multi-select dropdown */}
+          <div>
+            <strong>Multi-select Dropdown:</strong>
+            <select
+              multiple
+              value={selectedMembers}
+              onChange={handleMultiSelectChange}
+              style={{ 
+                padding: "5px", 
+                marginTop: "5px", 
+                minHeight: "80px",
+                width: "200px"
+              }}
+            >
+              {users.map((user) => (
+                <option key={user} value={user}>
+                  {user}
+                </option>
+              ))}
+            </select>
+            <p style={{ fontSize: "12px", color: "gray", marginTop: "5px" }}>
+              Hold Ctrl (Windows) or Cmd (Mac) to select multiple
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          disabled={!groupName.trim() || selectedMembers.length === 0 || isCreatingGroup}
+          style={{
+            padding: "8px 16px",
+            backgroundColor: isCreatingGroup ? "#ccc" : "#4CAF50",
+            color: "white",
+            border: "none",
+            borderRadius: "4px",
+            cursor: isCreatingGroup ? "not-allowed" : "pointer",
+          }}
+        >
+          {isCreatingGroup ? "Creating..." : "Create Group"}
+        </button>
+
+        {!groupName.trim() && (
+          <p style={{ color: "red", fontSize: "12px", marginTop: "5px" }}>
+            Group name is required
+          </p>
+        )}
+        {selectedMembers.length === 0 && groupName.trim() && (
+          <p style={{ color: "red", fontSize: "12px", marginTop: "5px" }}>
+            Please select at least one member
+          </p>
+        )}
+      </form>
+
+      <hr />
 
     <h2>Groups</h2>
     {groups.length === 0 && <p>No groups found</p>}

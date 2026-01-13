@@ -108,6 +108,7 @@ app.post("/api/expenses",async (req, res)=>{
 
 app.get("/api/expenses",async (req, res)=>{
     const {groupId} = req.query;
+    console.log("Incoming expense body : ", req.body)
 
     try {
         let expenses

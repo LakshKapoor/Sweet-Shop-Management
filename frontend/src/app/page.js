@@ -10,13 +10,13 @@ export default function Page() {
 
   const users=["u1", "u2", "u3"]
 
-  const [currentUserId, setCurrentUserId] = useState("user1")
+  const [currentUserId, setCurrentUserId] = useState("u1")
   const [expenses, setExpenses] = useState([]);
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
   const [groups, setGroups] = useState([]);
   const [selectedGroupId, setSelectedGroupId] = useState(null);
-  const [balances, setbalances] = useState(null);
+  const [balances, setBalances] = useState(null);
 
   
 
@@ -43,14 +43,14 @@ export default function Page() {
     }
     else{
       setExpenses([])
-      setbalances(null)
+      setBalances(null)
     }
   },[selectedGroupId]);
 
   const fetchbalances = (groupId)=>{
     fetch(`${APIurl}/api/groups/${groupId}/balances` )
     .then((res)=>res.json())
-    .then((data) => setbalances(data))
+    .then((data) => setBalances(data))
     .catch((err) => console.error(err));
   }
 
@@ -81,7 +81,8 @@ const handleSubmit = (e) =>{
     setAmount("")
     
     
-    fetchExpenses()
+    fetchExpenses(selectedGroupId)
+    fetchbalances(selectedGroupId)
   })
   .catch((err)=>console.log(err))
 };
@@ -109,7 +110,8 @@ const handleDelete = (id) =>{
        userId:currentUserId
      })
    })
-   fetchExpenses()
+   fetchExpenses(selectedGroupId)
+   fetchbalances(selectedGroupId)
  }
 
  //function for the reciever to confirm
@@ -124,7 +126,8 @@ const handleDelete = (id) =>{
       userId:currentUserId
     })
   });
-  fetchExpenses()
+  fetchExpenses(selectedGroupId)
+  fetchbalances(selectedGroupId)
  }
 
 
@@ -207,7 +210,7 @@ const handleDelete = (id) =>{
             console.log("closing group")
             setSelectedGroupId(null);
             setExpenses([]),
-            setbalances(null)
+            setBalances(null)
           }
           else{ 
             console.log("opening group")
@@ -259,6 +262,7 @@ const handleDelete = (id) =>{
                     </button>
                   )}
                 </div>
+               
               ))}
             </div>
           ))}

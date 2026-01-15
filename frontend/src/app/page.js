@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 
 /* API URL CONSTANT (HERE) */
-const APIurl = "http://172.26.32.205:3000";
+const APIurl = "http://192.168.29.1:3000";
 
 export default function Page() {
 

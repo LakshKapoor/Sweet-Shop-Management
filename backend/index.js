@@ -4,6 +4,10 @@ const Expense = require("./models/expense")
 const cors = require("cors")
 const calculateBalances = require("./utils/calculateBalances")
 const Group = require("./models/group")
+const bcrypt = require("bcryptjs");
+const User = require("./models/users");
+const jwt =require("jsonwebtoken")
+const auth = require("./middleware/auth")
 
 const app = express();
 app.use(express.json());
@@ -28,37 +32,83 @@ app.listen(PORT, () => {
 
 module.exports = app;
 
-app.post("/api/auth/register", (req, res)=>{
-    const {email, password} = req.body;
-    if(!email || !password){
-        return res.status(400).json({message: "Email and password are required"});
-    }
+app.post("/api/auth/register", async (req, res)=>{
+    const {name, email, password} = req.body
 
-    return res.status(201).json({message: "User registered successfully (mock)"});
+    if(!name || !email || !password){
+        return res.status(400).json({message: "All fields are required"});
+    }
+    try{
+        const existingUser = await User.findOne({email})
+        if(existingUser){
+            return res.status(400).json({message: "Email already registered"});
+        }
+
+        const hashedPassword =  await bcrypt.hash(password, 10)
+
+        const user =  await User.create({
+            name,
+            email,
+            password: hashedPassword,
+        })
+        return res.status(201).json({message: "User registered",
+            userId: user._id,
+        });
+        
+    }
+    catch(error){
+        console.error(error)
+        return res.status(500).json({message: "Registration failed"});
+
+    }
 })
 
-app.post("/api/auth/login", (req, res)=>{
+app.post("/api/auth/login", async (req, res)=>{
     const {email, password} = req.body;
 
     if(!email || !password){
         return res.status(400).json({message: "Email and password Required"});
     }
+    try{
+        const user = await User.findOne({email})
 
-    if(email !=="test@example.com" || password !== "password123"){
-        return res.status(401).json({message:"Invalid Credentials"});
+        if(!user){
+            return res.status(401).json({message:"Invalid Credentials"});
+        }
+
+        const isMatch = await bcrypt.compare(password, user.password)
+        if(!isMatch){
+            return res.status(401).json({message:"Invalid Credentials"});
+
+        }
+
+        const token =jwt.sign(
+            { userId: user._id},
+            "SECRET_KEY",
+            {expiresIn: "7d"}
+        )
+        return res.status(200).json({
+            message:"Login successful",
+            token,
+            userId: user._id,
+            name: user.name,
+        });
+}
+    catch(error){
+        console.error("Login error:", error)
+        return res.status(500).json({message:"Login Failed", error: error.message})
     }
-
-    return res.status(200).json({message:"Login successful (mock)"});
 
 });
 
-app.post("/api/expenses",async (req, res)=>{
-    const {title, amount, groupId, paidBy, splits: customSplits} = req.body;
+app.post("/api/expenses",auth, async (req, res)=>{
+    const {title, amount, groupId, splits: customSplits} = req.body;
+    const paidBy =  req.user.userId
+
 
     if(!title ||
         !amount ||
-        !groupId ||
-        !paidBy){
+        !groupId){
         return res.status(400).json({message: "Invalid expense data"})
     }
 

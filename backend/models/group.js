@@ -8,7 +8,7 @@ const groupSchema = new mongoose.Schema({
     },
 
     members: {
-        type: [String],
+        type: mongoose.Schema.Types.ObjectId,
         required: true
     },
     status:{

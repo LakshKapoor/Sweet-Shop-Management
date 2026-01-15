@@ -8,9 +8,9 @@ const APIurl = "http://192.168.29.1:3000";
 
 export default function Page() {
 
-  const users=["u1", "u2", "u3"]
+ 
 
-  const [currentUserId, setCurrentUserId] = useState("u1")
+  
   const [expenses, setExpenses] = useState([]);
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");

@@ -9,7 +9,8 @@ const groupSchema = new mongoose.Schema({
 
     members: {
         type: mongoose.Schema.Types.ObjectId,
-        required: true
+        required: true,
+        ref: "User"
     },
     status:{
         type: String,

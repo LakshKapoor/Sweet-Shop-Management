@@ -197,7 +197,7 @@ app.post("/api/expenses",auth, async (req, res)=>{
     
 });
 
-app.get("/api/expenses",async (req, res)=>{
+app.get("/api/expenses",auth, async (req, res)=>{
     const {groupId} = req.query;
     console.log("Incoming expense body : ", req.body)
 
@@ -206,6 +206,8 @@ app.get("/api/expenses",async (req, res)=>{
         
         if(groupId){
             expenses = await Expense.find({groupId})
+            .populate("paidBy", "name")
+            .populate("splits.userId", "name")
         } else {
             expenses = await Expense.find()
         }
@@ -270,13 +272,19 @@ app.delete("/api/expenses/:id", async (req, res)=>{
 
 app.post("/api/groups", async (req, res) =>{
     const {name, members} = req.body;
+    const creatorId = req.user.userId
+    
     if(!name || !members || members.length === 0){
         return res.status(400).json({message:"Invalid group data"})
     }
     
+    const uniqueMembers = Array.from(
+        new Set([creatorId, ...(members || [])])
+    )
     try {
         const group = await Group.create({
-            name, members
+            name, 
+            members: uniqueMembers,
         })
         return res.status(201).json({message:"Group created", group})
     } catch (error) {
@@ -403,7 +411,7 @@ app.post("/api/groups/:groupId/settle", async (req, res)=>{
         if(!group){
             return res.status(404).json({message:"Group not found"})
         }
-        if(group === "SETTLED"){
+        if(group.status === "SETTLED"){
             return res.status(404).json({message:"Group already settled"})
         }
         const expenses = await Expense.find({ groupId})

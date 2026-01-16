@@ -3,9 +3,7 @@ const mongoose = require("mongoose");
 const splitSchema = new mongoose.Schema({
     userId:{
          type: mongoose.Schema.Types.ObjectId,
-        // ref: "User",
-        
-        
+        ref: "User",
         required: true
     },
     share:{
@@ -37,7 +35,7 @@ const expenseSchema = new mongoose.Schema({
     },
     paidBy:{
         type: mongoose.Schema.Types.ObjectId,
-        // ref: "User",
+        ref: "User",
         // required: true
         required: true
 

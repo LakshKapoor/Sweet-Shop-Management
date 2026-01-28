@@ -1,59 +1,144 @@
-#Sweet Shop Management System
+# Expense Tracker (Splitwise-like Application)
 
-## Project Overview
-This project is a backend-first implementation of a Sweet Shop Management System.
-It allows users to register, authenticate, and manage sweets inventory.
+A full-stack expense tracking application inspired by Splitwise.  
+Users can create groups, add expenses, split costs equally or custom-wise, track balances, and settle group expenses securely using authentication.
 
-The goal of this project is to demonstrate backend fundamentals, REST APIs,
-test-driven development, and clean version control practices, using test-driven
-development (TDD)
+---
 
+## 🚀 Features
 
-## Tech Stack
-- Backend: Node.js, Express
-- Database: Planned (PostgreSQL / SQLite)
-- Testing: Jest, Supertest (planned)
-- Authentication: JWT (planned)
-- Frontend: React (planned)
+- User Authentication (Register & Login using JWT)
+- Create Groups (Trips, Roommates, Friends, etc.)
+- Add Expenses inside Groups
+- Split Expenses:
+  - Equal split
+  - Custom split (amount or percentage)
+- Track who owes whom (Balances)
+- Mark expenses as Paid & Confirmed
+- Settle an entire group
+- Protected APIs using JWT Authentication
+- Real-time balance updates
 
+---
 
-## Features (Planned)
-- User registration and login
-- Token-based authentication
-- Add, update, delete sweets (admin)
-- Purchase and restock sweets
-- Search and filter sweets
+## 🛠️ Tech Stack
 
-## Current Status
-- Express backend initialized
-- Health check endpoint implemented
+### Frontend
+- Next.js (App Router)
+- React Hooks
+- Tailwind CSS
+- Fetch API
 
-## My AI Usage
-Used an AI assistant to:
-- Understand project requirements
-- Plan the backend architecture
-- Generate initial boilerplate code
-- Plan development steps
+### Backend
+- Node.js
+- Express.js
+- MongoDB
+- Mongoose
+- JSON Web Tokens (JWT)
+- bcrypt (password hashing)
 
-## Installation
-- Clone repo  
-- Navigate to backend:
-```bash
-cd backend
-npm install
-```
+---
 
-## Testing
-- Run `npx jest` to run all tests
-- Tests include:
-  - Registration failure & success
-  - Login failure & success
-  - Sweets API returning array
+## 🔐 Authentication Flow
 
-Steps followed: RED → GREEN → REFACTOR
+1. User registers using email & password
+2. Password is hashed using bcrypt
+3. User logs in → JWT token is generated
+4. Token is stored in `localStorage`
+5. Token is sent in `Authorization` header for protected routes
 
-## Start Server
-- Start the server
-```bash
-node index.js
-```
+---
+
+## 📌 Group Workflow
+
+1. User creates a group
+2. Creator is automatically added as a member
+3. Members can be added later
+4. Expenses are always linked to a group
+
+---
+
+## 💸 Expense Workflow
+
+- Expense includes:
+  - title
+  - amount
+  - groupId
+  - paidBy (logged-in user)
+  - splits
+
+### Equal Split
+Amount is divided equally among all group members.
+
+### Custom Split
+User can:
+- Select who participates
+- Split by amount or percentage
+- Backend validates that split total = expense amount
+
+---
+
+## 📊 Balance Calculation
+
+Balances are calculated by:
+- Subtracting unpaid shares from users
+- Adding shares to the payer
+- Ignoring CONFIRMED splits
+
+---
+
+## 🧾 API Endpoints
+
+### Auth
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+
+### Groups
+- `POST /api/groups`
+- `GET /api/groups`
+- `POST /api/groups/:groupId/settle`
+
+### Expenses
+- `POST /api/expenses`
+- `GET /api/expenses?groupId=`
+- `POST /api/expenses/:expenseId/pay`
+- `POST /api/expenses/:expenseId/confirm`
+
+---
+
+## ⚠️ Important Validations
+
+- Only group members can add expenses
+- PaidBy must be included in splits
+- Split total must equal expense amount
+- No expenses allowed after group is settled
+- All protected routes require JWT
+
+---
+
+## 🧠 Learning Outcomes
+
+- Full-stack architecture
+- JWT-based authentication
+- MongoDB relational modeling
+- Business logic for expense splitting
+- State management in React
+- Secure API design
+
+---
+
+## 📌 Future Enhancements
+
+- Invite users via email
+- User profile pages
+- Notifications
+- Expense categories
+- Payment gateway integration
+- Mobile-friendly UI
+
+---
+
+## 👨‍💻 Author
+
+**Laksh Kapoor**  
+Built as a learning-driven full-stack project inspired by Splitwise.

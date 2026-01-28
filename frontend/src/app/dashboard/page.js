@@ -4,14 +4,14 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 /* API URL CONSTANT (HERE) */
-const APIurl = "http://192.168.29.144:3000";
+const APIurl = "http://172.25.3.160:3000";
 
 export default function Page() {
   // Get current user from localStorage (set by login page)
   const [currentUserId, setCurrentUserId] = useState(null);
   const [token, setToken] = useState(null);
   const [userName, setUserName] = useState(null);
-
+const[users, setUsers] = useState([])
   const [expenses, setExpenses] = useState([]);
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
@@ -29,9 +29,9 @@ export default function Page() {
 
   const selectedGroup = groups.find(
     (group) => group._id === selectedGroupId
-  )
+  );
   
-  const router = useRouter()
+  const router = useRouter();
   // Load user data from localStorage on mount
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
@@ -512,7 +512,7 @@ const handleDelete = (id) =>{
                   )}
                 </div>
 
-                {/* <div>
+                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Select Members
                   </label>
@@ -533,7 +533,7 @@ const handleDelete = (id) =>{
                   </div>
 
                   {/* Multi-select dropdown */}
-                  {/* <div>
+                   <div>
                     <select
                       multiple
                       value={selectedMembers}
@@ -554,7 +554,7 @@ const handleDelete = (id) =>{
                   {selectedMembers.length === 0 && groupName.trim() && (
                     <p className="mt-1 text-xs text-red-500">Please select at least one member</p>
                   )}
-                </div>  */}
+                </div>  
 
                 <button
                   type="submit"

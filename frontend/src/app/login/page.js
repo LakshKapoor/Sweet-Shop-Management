@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 
-const APIurl = "http://192.168.29.144:3000"
+const APIurl = "http://172.25.3.160:3000"
 
 export default function Loginpage(){
     const router =useRouter()
